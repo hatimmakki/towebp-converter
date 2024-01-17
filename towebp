@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Function to check if cwebp is installed
+check_cwebp_installed() {
+    if ! command -v cwebp &> /dev/null; then
+        echo "cwebp could not be found"
+        install_cwebp
+    else
+        echo "cwebp is already installed."
+    fi
+}
+
+# Function to install cwebp
+install_cwebp() {
+    echo "Attempting to install cwebp..."
+
+    # Detect OS and install accordingly
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux
+        local os_info=$(cat /etc/os-release)
+        if [[ $os_info == *"Ubuntu"* || $os_info == *"Debian"* ]]; then
+            sudo apt-get update && sudo apt-get install -y webp
+        elif [[ $os_info == *"Fedora"* || $os_info == *"CentOS"* ]]; then
+            sudo yum install -y webp
+        else
+            echo "Unsupported Linux distribution for automatic installation."
+            return 1
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        if command -v brew &> /dev/null; then
+            brew install webp
+        else
+            echo "Homebrew not found. Please install Homebrew."
+            return 1
+        fi
+    else
+        echo "Unsupported operating system for automatic installation."
+        return 1
+    fi
+
+    echo "cwebp installed successfully."
+}
+
+install_script() {
+    if [[ $EUID -ne 0 ]]; then
+        echo "You must be a root user" 2>&1
+        exit 1
+    else
+        cp $0 /usr/local/bin/towebp
+        chmod +x /usr/local/bin/towebp
+        echo "Script installed successfully to /usr/local/bin/towebp"
+    fi
+}
+
+
+# Function to convert a single image to WebP
+convert_to_webp() {
+    local input_file=$1
+    local output_file="${input_file%.*}.webp"
+
+    # Convert the file to WebP
+    cwebp "$input_file" -o "$output_file"
+    echo "Converted $input_file to $output_file"
+}
+
+# Function to uninstall this script from /usr/local/bin
+uninstall_script() {
+    if [[ $EUID -ne 0 ]]; then
+        echo "You must be a root user" 2>&1
+        exit 1
+    else
+        rm -f /usr/local/bin/towebp
+        echo "Script uninstalled successfully from /usr/local/bin"
+    fi
+}
+
+
+check_cwebp_installed
+# Main script logic
+if [[ "$1" == "install" ]]; then
+    install_script
+
+elif [[ "$1" == "uninstall" ]]; then
+    uninstall_script
+    exit 0
+
+elif [[ "$1" == "-all" ]]; then
+    # Convert all images in the current directory
+    for file in *.{jpg,jpeg,png,gif,tiff,bmp}; do
+        [ -e "$file" ] || continue
+        convert_to_webp "$file"
+    done
+else
+    # Convert a single file
+    if [ -z "$1" ]; then
+        echo "Usage: towebp <filename>|-all|install"
+        exit 1
+    fi
+    convert_to_webp "$1"
+fi
