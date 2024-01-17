@@ -1,9 +1,6 @@
 ![towebp Logo](towebp-logo.webp)
 
-
-
-
-# towebp
+# towebp - A Bash utility for converting image files to WebP format
 
 ## Overview
 
@@ -54,6 +51,10 @@ To uninstall the `towebp` script from your system:
 
     ```bash
         towebp filename.jpg
+        #or
+        towebp "file name.jpg"
+
+
     ```
 
 - To batch convert all supported image files in the current directory:
