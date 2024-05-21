@@ -16,7 +16,6 @@ install_cwebp() {
 
     # Detect OS and install accordingly
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Linux
         local os_info=$(cat /etc/os-release)
         if [[ $os_info == *"Ubuntu"* || $os_info == *"Debian"* ]]; then
             sudo apt-get update && sudo apt-get install -y webp
@@ -27,7 +26,6 @@ install_cwebp() {
             return 1
         fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
         if command -v brew &> /dev/null; then
             brew install webp
         else
@@ -42,6 +40,46 @@ install_cwebp() {
     echo "cwebp installed successfully."
 }
 
+# Function to check if gif2webp is installed
+check_gif2webp_installed() {
+    if ! command -v gif2webp &> /dev/null; then
+        echo "gif2webp could not be found"
+        install_gif2webp
+    else
+        echo "gif2webp is already installed."
+    fi
+}
+
+# Function to install gif2webp
+install_gif2webp() {
+    echo "Attempting to install gif2webp..."
+
+    # Detect OS and install accordingly
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        local os_info=$(cat /etc/os-release)
+        if [[ $os_info == *"Ubuntu"* || $os_info == *"Debian"* ]]; then
+            sudo apt-get update && sudo apt-get install -y webp
+        elif [[ $os_info == *"Fedora"* || $os_info == *"CentOS"* ]]; then
+            sudo yum install -y webp
+        else
+            echo "Unsupported Linux distribution for automatic installation."
+            return 1
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        if command -v brew &> /dev/null; then
+            brew install webp
+        else
+            echo "Homebrew not found. Please install Homebrew."
+            return 1
+        fi
+    else
+        echo "Unsupported operating system for automatic installation."
+        return 1
+    fi
+
+    echo "gif2webp installed successfully."
+}
+
 install_script() {
     if [[ $EUID -ne 0 ]]; then
         echo "You must be a root user" 2>&1
@@ -53,14 +91,19 @@ install_script() {
     fi
 }
 
-
 # Function to convert a single image to WebP
 convert_to_webp() {
     local input_file=$1
     local output_file="${input_file%.*}.webp"
 
-    # Convert the file to WebP
-    cwebp "$input_file" -o "$output_file"
+    local extension="${input_file##*.}"
+    if [[ "$extension" == "gif" ]]; then
+        check_gif2webp_installed
+        gif2webp "$input_file" -o "$output_file"
+    else
+        check_cwebp_installed
+        cwebp "$input_file" -o "$output_file"
+    fi
     echo "Converted $input_file to $output_file"
 }
 
@@ -75,19 +118,16 @@ uninstall_script() {
     fi
 }
 
-
 check_cwebp_installed
 # Main script logic
 if [[ "$1" == "install" ]]; then
     install_script
-
 elif [[ "$1" == "uninstall" ]]; then
     uninstall_script
     exit 0
-
 elif [[ "$1" == "-all" ]]; then
     # Convert all images in the current directory
-    for file in *.{jpg,jpeg,png,gif,tiff,bmp}; do
+    for file in *.{jpg,jpeg,png,gif,tiff}; do
         [ -e "$file" ] || continue
         convert_to_webp "$file"
     done
