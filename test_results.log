@@ -1,0 +1,32 @@
+Running test: Check cwebp installation
+cwebp is already installed.
+You must be a root user
+Test passed: cwebp is installed
+Running test: Convert single image
+cwebp is already installed.
+cwebp is already installed.
+Converted single-image-conversion-test/sample-jpg.jpg to single-image-conversion-test/sample-jpg.webp
+Test passed: Single image conversion
+Running test: Convert all images
+cwebp is already installed.
+cwebp is already installed.
+Converted sample-jpg.jpg to sample-jpg.webp
+cwebp is already installed.
+Converted sample-png.png to sample-png.webp
+gif2webp is already installed.
+Converted sample-gif.gif to sample-gif.webp
+cwebp is already installed.
+Converted sample-tiff.tiff to sample-tiff.webp
+[0;32m[PASS] Test passed jpg: jpg image conversion to webp file created[0m
+[0;32m[PASS] Test passed png: png image conversion to webp file created[0m
+[0;32m[PASS] Test passed gif: gif image conversion to webp file created[0m
+[0;32m[PASS] Test passed tiff: tiff image conversion to webp file created[0m
+[0;32m[ALL PASS] '--all' tests passed: All images conversion[0m
+Running test: Install script
+cwebp is already installed.
+Script installed successfully to /usr/local/bin/towebp
+Test passed: Script installation
+Running test: Uninstall script
+cwebp is already installed.
+Script uninstalled successfully from /usr/local/bin
+Test passed: Script uninstallation
